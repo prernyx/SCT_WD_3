@@ -1,0 +1,615 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>Neon Quiz Arena</title>
+
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
+<style>
+
+*{
+margin:0;
+padding:0;
+box-sizing:border-box;
+font-family:'Poppins',sans-serif;
+}
+
+body{
+background:
+radial-gradient(circle at top left,#00ffff20,transparent 30%),
+radial-gradient(circle at bottom right,#ff00ff20,transparent 30%),
+#050816;
+color:white;
+min-height:100vh;
+display:flex;
+justify-content:center;
+align-items:center;
+padding:30px;
+overflow-x:hidden;
+}
+
+body::before{
+content:'';
+position:fixed;
+width:100%;
+height:100%;
+background:
+linear-gradient(90deg,transparent 98%,rgba(0,255,255,.05) 100%),
+linear-gradient(180deg,transparent 98%,rgba(255,0,255,.05) 100%);
+background-size:40px 40px;
+pointer-events:none;
+}
+
+.quiz-container{
+width:100%;
+max-width:950px;
+background:rgba(255,255,255,.05);
+backdrop-filter:blur(20px);
+border:1px solid rgba(255,255,255,.1);
+border-radius:25px;
+padding:35px;
+box-shadow:
+0 0 20px #00ffff30,
+0 0 40px #ff00ff20;
+}
+
+.header{
+display:flex;
+justify-content:space-between;
+align-items:center;
+margin-bottom:25px;
+flex-wrap:wrap;
+gap:15px;
+}
+
+.logo{
+font-size:2rem;
+font-weight:700;
+color:#00ffff;
+text-shadow:0 0 15px #00ffff;
+}
+
+.stats{
+display:flex;
+gap:15px;
+}
+
+.card{
+background:rgba(255,255,255,.05);
+padding:12px 18px;
+border-radius:12px;
+border:1px solid rgba(255,255,255,.08);
+}
+
+.progress-container{
+height:12px;
+background:#1a1f35;
+border-radius:20px;
+overflow:hidden;
+margin:25px 0;
+}
+
+.progress{
+height:100%;
+width:0;
+background:linear-gradient(90deg,#00ffff,#ff00ff);
+box-shadow:0 0 15px #00ffff;
+transition:.4s;
+}
+
+.question{
+font-size:1.5rem;
+font-weight:600;
+margin-bottom:25px;
+line-height:1.5;
+}
+
+.options{
+display:flex;
+flex-direction:column;
+gap:15px;
+}
+
+.option{
+padding:16px;
+background:rgba(255,255,255,.04);
+border:2px solid rgba(255,255,255,.08);
+border-radius:14px;
+cursor:pointer;
+transition:.3s;
+}
+
+.option:hover{
+transform:translateY(-3px);
+border-color:#00ffff;
+box-shadow:0 0 15px #00ffff55;
+}
+
+.selected{
+background:#00ffff20;
+border-color:#00ffff;
+box-shadow:0 0 20px #00ffff;
+}
+
+.fill-input{
+width:100%;
+padding:16px;
+border:none;
+outline:none;
+background:#111827;
+color:white;
+border-radius:12px;
+font-size:1rem;
+border:2px solid #00ffff55;
+}
+
+.buttons{
+margin-top:30px;
+display:flex;
+justify-content:space-between;
+}
+
+button{
+padding:14px 24px;
+border:none;
+cursor:pointer;
+font-weight:600;
+font-size:1rem;
+border-radius:12px;
+transition:.3s;
+}
+
+.prev-btn{
+background:#222;
+color:white;
+}
+
+.next-btn{
+background:linear-gradient(90deg,#00ffff,#ff00ff);
+color:white;
+}
+
+button:hover{
+transform:translateY(-2px) scale(1.03);
+}
+
+.timer{
+font-size:1.1rem;
+font-weight:600;
+color:#00ffff;
+}
+
+.result{
+display:none;
+text-align:center;
+}
+
+.score-circle{
+width:220px;
+height:220px;
+border-radius:50%;
+margin:25px auto;
+display:flex;
+align-items:center;
+justify-content:center;
+font-size:2.3rem;
+font-weight:700;
+background:
+conic-gradient(#00ffff 0deg,#ff00ff 270deg,#222 270deg);
+box-shadow:
+0 0 25px #00ffff,
+0 0 40px #ff00ff;
+}
+
+.review{
+margin-top:30px;
+text-align:left;
+}
+
+.review-item{
+padding:15px;
+margin-bottom:15px;
+border-radius:12px;
+}
+
+.correct{
+background:#00ff8820;
+border:1px solid #00ff88;
+}
+
+.wrong{
+background:#ff3b3b20;
+border:1px solid #ff3b3b;
+}
+
+.restart{
+margin-top:20px;
+background:linear-gradient(90deg,#00ffff,#ff00ff);
+}
+
+@media(max-width:768px){
+
+.logo{
+font-size:1.5rem;
+}
+
+.question{
+font-size:1.2rem;
+}
+
+.header{
+flex-direction:column;
+align-items:flex-start;
+}
+
+.score-circle{
+width:170px;
+height:170px;
+font-size:1.8rem;
+}
+
+}
+
+</style>
+</head>
+
+<body>
+
+<div class="quiz-container">
+
+<div id="quizSection">
+
+<div class="header">
+<div class="logo">⚡ Neon Quiz Arena</div>
+
+<div class="stats">
+<div class="card" id="questionCounter"></div>
+<div class="card timer">⏳ <span id="timer">20</span>s</div>
+</div>
+</div>
+
+<div class="progress-container">
+<div class="progress" id="progressBar"></div>
+</div>
+
+<div id="questionArea"></div>
+
+<div class="buttons">
+<button class="prev-btn" onclick="prevQuestion()">Previous</button>
+<button class="next-btn" onclick="nextQuestion()">Next</button>
+</div>
+
+</div>
+
+<div id="resultSection" class="result">
+
+<h1>🏆 Quiz Completed</h1>
+
+<div class="score-circle" id="scoreCircle">
+0%
+</div>
+
+<h2 id="scoreText"></h2>
+
+<p id="performance"></p>
+
+<button class="restart" onclick="restartQuiz()">
+Play Again
+</button>
+
+<div class="review" id="review"></div>
+
+</div>
+
+</div>
+
+<script>
+
+const quiz = [
+
+{
+type:"single",
+question:"Which language runs inside a browser?",
+options:["Java","C++","JavaScript","Python"],
+answer:"JavaScript"
+},
+
+{
+type:"multi",
+question:"Select Frontend Technologies",
+options:["React","Angular","Node.js","Vue"],
+answer:["React","Angular","Vue"]
+},
+
+{
+type:"fill",
+question:"HTML stands for ______ Text Markup Language",
+answer:"Hyper"
+},
+
+{
+type:"single",
+question:"Which company developed React?",
+options:["Google","Meta","Amazon","Microsoft"],
+answer:"Meta"
+},
+
+{
+type:"multi",
+question:"Choose Programming Languages",
+options:["Python","CSS","Java","HTML"],
+answer:["Python","Java"]
+}
+
+];
+
+let current = 0;
+let answers = Array(quiz.length).fill(null);
+
+let timeLeft = 20;
+let timer;
+
+const area = document.getElementById("questionArea");
+
+function startTimer(){
+
+clearInterval(timer);
+
+timeLeft = 20;
+
+document.getElementById("timer").innerText = timeLeft;
+
+timer = setInterval(()=>{
+
+timeLeft--;
+
+document.getElementById("timer").innerText = timeLeft;
+
+if(timeLeft===0){
+nextQuestion();
+}
+
+},1000);
+
+}
+
+function renderQuestion(){
+
+const q = quiz[current];
+
+document.getElementById("questionCounter")
+.innerText=`Question ${current+1}/${quiz.length}`;
+
+document.getElementById("progressBar")
+.style.width=((current+1)/quiz.length)*100+"%";
+
+let html=`<div class="question">${q.question}</div>`;
+
+if(q.type==="single"){
+
+html+=`<div class="options">`;
+
+q.options.forEach(op=>{
+
+html+=`
+<div class="option ${
+answers[current]===op?"selected":""
+}"
+onclick="selectSingle('${op}')">
+${op}
+</div>
+`;
+
+});
+
+html+=`</div>`;
+}
+
+else if(q.type==="multi"){
+
+html+=`<div class="options">`;
+
+q.options.forEach(op=>{
+
+let selected =
+answers[current]?.includes(op);
+
+html+=`
+<div class="option ${
+selected?"selected":""
+}"
+onclick="toggleMulti('${op}')">
+${op}
+</div>
+`;
+
+});
+
+html+=`</div>`;
+}
+
+else{
+
+html+=`
+<input
+class="fill-input"
+placeholder="Type Answer..."
+value="${answers[current]||''}"
+oninput="fillAnswer(this.value)">
+`;
+
+}
+
+area.innerHTML=html;
+
+startTimer();
+
+}
+
+function selectSingle(value){
+answers[current]=value;
+renderQuestion();
+}
+
+function toggleMulti(value){
+
+if(!answers[current])
+answers[current]=[];
+
+let arr=answers[current];
+
+if(arr.includes(value)){
+arr=arr.filter(x=>x!==value);
+}else{
+arr.push(value);
+}
+
+answers[current]=arr;
+renderQuestion();
+}
+
+function fillAnswer(v){
+answers[current]=v;
+}
+
+function nextQuestion(){
+
+if(current<quiz.length-1){
+current++;
+renderQuestion();
+}
+else{
+showResult();
+}
+
+}
+
+function prevQuestion(){
+
+if(current>0){
+current--;
+renderQuestion();
+}
+
+}
+
+function showResult(){
+
+clearInterval(timer);
+
+let score=0;
+let reviewHTML='';
+
+quiz.forEach((q,index)=>{
+
+let correct=false;
+
+if(q.type==="single"){
+correct=answers[index]===q.answer;
+}
+
+else if(q.type==="multi"){
+
+let user=[...(answers[index]||[])].sort();
+let ans=[...q.answer].sort();
+
+correct=
+JSON.stringify(user)===
+JSON.stringify(ans);
+}
+
+else{
+
+correct=
+(answers[index]||"")
+.toLowerCase()
+.trim()===
+q.answer.toLowerCase();
+}
+
+if(correct) score++;
+
+reviewHTML+=`
+<div class="review-item ${
+correct?"correct":"wrong"
+}">
+<strong>Q${index+1}</strong><br>
+${q.question}<br><br>
+
+Your Answer:
+${Array.isArray(answers[index])
+?answers[index].join(", ")
+:answers[index]||"Not Answered"}
+
+<br><br>
+
+Correct:
+${Array.isArray(q.answer)
+?q.answer.join(", ")
+:q.answer}
+</div>
+`;
+
+});
+
+document.getElementById("quizSection")
+.style.display="none";
+
+document.getElementById("resultSection")
+.style.display="block";
+
+let percentage =
+Math.round((score/quiz.length)*100);
+
+document.getElementById("scoreCircle")
+.innerText=percentage+"%";
+
+document.getElementById("scoreText")
+.innerText=`${score} / ${quiz.length} Correct`;
+
+let msg="";
+
+if(percentage>=90)
+msg="🚀 Elite Quiz Master";
+
+else if(percentage>=70)
+msg="🔥 Excellent Performance";
+
+else if(percentage>=50)
+msg="⚡ Good Work";
+
+else
+msg="💡 Keep Practicing";
+
+document.getElementById("performance")
+.innerText=msg;
+
+document.getElementById("review")
+.innerHTML=reviewHTML;
+
+}
+
+function restartQuiz(){
+
+current=0;
+answers=Array(quiz.length).fill(null);
+
+document.getElementById("resultSection")
+.style.display="none";
+
+document.getElementById("quizSection")
+.style.display="block";
+
+renderQuestion();
+
+}
+
+renderQuestion();
+
+</script>
+
+</body>
+</html>
